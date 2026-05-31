@@ -25,7 +25,7 @@ export default function GenreFilter() {
 
 const styles = StyleSheet.create({
   container: {
-    paddingHorizontal: 16,
+    paddingHorizontal: 10,
     paddingVertical: 18,
     gap: 12,
   },

@@ -3,7 +3,6 @@ import { SafeAreaView, ScrollView, StatusBar, StyleSheet } from "react-native";
 import HeroBanner from "../components/HeroBanner";
 import GenreFilter from "../components/GenreFilter";
 import MovieList from "../components/MovieList";
-import BottomNavigation from "../components/BottomNavigation";
 
 export default function Home() {
   return (
@@ -16,7 +15,6 @@ export default function Home() {
         <GenreFilter />
         <MovieList />
       </ScrollView>
-      <BottomNavigation active="home" />
     </SafeAreaView>
   );
 }

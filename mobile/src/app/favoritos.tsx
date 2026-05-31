@@ -11,7 +11,6 @@ import {
 import GenreFilter from "../components/GenreFilter";
 import MovieList from "../components/MovieList";
 import { router } from "expo-router";
-import BottomNavigation from "../components/BottomNavigation";
 
 export default function Favoritos() {
   return (
@@ -28,12 +27,12 @@ export default function Favoritos() {
         <Text style={styles.title}>Favoritos</Text>
       </View>
 
-      <GenreFilter />
-
+      <View style={styles.filterArea}>
+        <GenreFilter />
+      </View>
       <ScrollView showsVerticalScrollIndicator={false}>
         <MovieList />
       </ScrollView>
-      <BottomNavigation active="favoritos" />
     </SafeAreaView>
   );
 }
@@ -47,7 +46,6 @@ const styles = StyleSheet.create({
   header: {
     marginTop: 24,
     marginLeft: 24,
-    gap: 5,
   },
 
   backButton: {
@@ -65,5 +63,8 @@ const styles = StyleSheet.create({
     color: "#FFFFFF",
     fontSize: 34,
     fontWeight: "800",
+  },
+  filterArea: {
+    marginBottom: 6,
   },
 });
