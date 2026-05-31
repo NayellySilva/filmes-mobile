@@ -1,12 +1,6 @@
 import { Heart, Star } from "lucide-react-native";
 import { useState } from "react";
-import {
-  Image,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
-} from "react-native";
+import { Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
 type Movie = {
   id: string;
@@ -64,7 +58,6 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     overflow: "hidden",
     backgroundColor: "#1C1C22",
-    
   },
 
   image: {

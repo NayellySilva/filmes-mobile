@@ -1,5 +1,5 @@
 import { StyleSheet, View } from "react-native";
-import MovieCard from "./ui/MovieCard";
+import MovieCard from "./MovieCard";
 
 const filmes = [
   {
