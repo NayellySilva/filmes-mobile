@@ -1,5 +1,8 @@
+import { router } from "expo-router";
 import { useState } from 'react';
 import {
+  
+  
   ScrollView,
   StyleSheet,
   TextInput,
@@ -15,6 +18,8 @@ export default function Adicionar() {
   const [titulo, setTitulo] = useState('');
   const [tipo, setTipo] = useState('Filme');
   const [mostrarTipo, setMostrarTipo] = useState(false);
+  const [genero, setGenero] = useState('Ficção Científica');
+const [mostrarGenero, setMostrarGenero] = useState(false);
   const [nota, setNota] = useState('');
   const [urlCapa, setUrlCapa] = useState('');
   const [sinopse, setSinopse] = useState('');
@@ -26,19 +31,37 @@ export default function Adicionar() {
     );
   };
 
+  const limparCampos = () => {
+  setTitulo('');
+  setTipo('Filme');
+  setNota('');
+  setUrlCapa('');
+  setSinopse('');
+  setMostrarTipo(false);
+};
+
   return (
     <ThemedView style={styles.container}>
       <ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.scrollContent}
       >
-        <ThemedText style={styles.backButton}>
-          ← Voltar
-        </ThemedText>
+        <View style={styles.header}>
+  <TouchableOpacity
+    style={styles.backButton}
+    onPress={() => router.back()}
+  >
+   
 
-        <ThemedText style={styles.title}>
-          Adicionar ao Catálogo
-        </ThemedText>
+    <ThemedText style={styles.backText}>
+     ← Voltar
+    </ThemedText>
+  </TouchableOpacity>
+
+  <ThemedText style={styles.title}>
+    Adicionar ao Catálogo
+  </ThemedText>
+</View>
 
         <ThemedText style={styles.description}>
           Cadastre um novo filme ou série no catálogo.
@@ -107,24 +130,59 @@ export default function Adicionar() {
   placeholder="2026"
   placeholderTextColor="#7A8395"
   keyboardType="numeric"
+  maxLength={4}
 />
           </View>
         </View>
 
         <View style={styles.row}>
           <View style={styles.half}>
-            <ThemedText style={styles.label}>GÊNERO</ThemedText>
+  <ThemedText style={styles.label}>GÊNERO</ThemedText>
 
-            <TouchableOpacity style={styles.selectContainer}>
-              <ThemedText style={styles.selectText}>
-                Ficção Científica
-              </ThemedText>
+  <TouchableOpacity
+    style={styles.selectContainer}
+    onPress={() => setMostrarGenero(!mostrarGenero)}
+  >
+    <ThemedText style={styles.selectText}>
+      {genero}
+    </ThemedText>
 
-              <ThemedText style={styles.arrow}>
-                ▼
-              </ThemedText>
-            </TouchableOpacity>
-          </View>
+    <ThemedText style={styles.arrow}>
+      ▼
+    </ThemedText>
+  </TouchableOpacity>
+
+  {mostrarGenero && (
+    <View style={styles.dropdown}>
+      {[
+        'Ação',
+        'Aventura',
+        'Comédia',
+        'Drama',
+        'Fantasia',
+        'Ficção Científica',
+        'Romance',
+        'Suspense',
+        'Terror',
+        'Documentário',
+        'Animação',
+      ].map((item) => (
+        <TouchableOpacity
+          key={item}
+          style={styles.dropdownItem}
+          onPress={() => {
+            setGenero(item);
+            setMostrarGenero(false);
+          }}
+        >
+          <ThemedText style={styles.dropdownText}>
+            {item}
+          </ThemedText>
+        </TouchableOpacity>
+      ))}
+    </View>
+  )}
+</View>
 
           <View style={styles.half}>
             <ThemedText style={styles.label}>NOTA (0-10)</ThemedText>
@@ -169,11 +227,14 @@ export default function Adicionar() {
             </ThemedText>
           </TouchableOpacity>
 
-          <TouchableOpacity style={styles.cancelButton}>
-            <ThemedText style={styles.buttonText}>
-              Cancelar
-            </ThemedText>
-          </TouchableOpacity>
+          <TouchableOpacity
+  style={styles.cancelButton}
+  onPress={limparCampos}
+>
+  <ThemedText style={styles.buttonText}>
+    Cancelar
+  </ThemedText>
+</TouchableOpacity>
         </View>
       </ScrollView>
     </ThemedView>
@@ -183,7 +244,7 @@ export default function Adicionar() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#071427',
+    backgroundColor: '#0F172A',
   },
 
   scrollContent: {
@@ -192,27 +253,37 @@ const styles = StyleSheet.create({
     paddingBottom: 40,
   },
 
-  backButton: {
-    color: '#9AA4B2',
-    fontSize: 14,
-    marginBottom: 20,
-  },
+  header: {
+  marginTop: 24,
+  gap: 5,
+},
+
+backButton: {
+  flexDirection: 'row',
+  alignItems: 'center',
+  gap: 5,
+},
+
+backText: {
+  color: '#94A3B8',
+  fontSize: 14,
+},
 
   title: {
-    fontSize: 34,
-    fontWeight: '700',
-    color: '#FFFFFF',
-    marginBottom: 8,
-  },
+  fontSize: 28,
+  fontWeight: '800',
+  color: '#FFFFFF',
+  lineHeight: 32,
+},
 
   description: {
     color: '#9AA4B2',
-    fontSize: 15,
+    fontSize: 13,
     marginBottom: 26,
   },
 
   label: {
-    color: '#7E8AA0',
+    color: '#94A3B8',
     fontSize: 12,
     fontWeight: '600',
     marginBottom: 8,
@@ -298,7 +369,7 @@ const styles = StyleSheet.create({
 
   addButton: {
     flex: 1,
-    backgroundColor: '#FF2347',
+    backgroundColor: '#FF1F3D',
     paddingVertical: 16,
     borderRadius: 14,
     alignItems: 'center',
