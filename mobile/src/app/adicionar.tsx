@@ -254,8 +254,8 @@ const styles = StyleSheet.create({
   },
 
   header: {
-  marginTop: 24,
-  gap: 5,
+  marginTop: 15,
+  gap: 6,
 },
 
 backButton: {
@@ -278,8 +278,9 @@ backText: {
 
   description: {
     color: '#9AA4B2',
-    fontSize: 13,
-    marginBottom: 26,
+    fontSize: 15,
+    marginTop: 2,
+    marginBottom: 18,
   },
 
   label: {
