@@ -1,73 +1,69 @@
 import { router } from "expo-router";
-import { useState } from 'react';
+import { ChevronDown, ArrowLeft } from "lucide-react-native";
+import { useState } from "react";
+
 import {
-  
-  
+  Alert,
   ScrollView,
   StyleSheet,
+  Text,
   TextInput,
   TouchableOpacity,
-  Alert,
   View,
-} from 'react-native';
-
-import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
+} from "react-native";
 
 export default function Adicionar() {
-  const [titulo, setTitulo] = useState('');
-  const [tipo, setTipo] = useState('Filme');
+  const [titulo, setTitulo] = useState("");
+  const [tipo, setTipo] = useState("Filme");
   const [mostrarTipo, setMostrarTipo] = useState(false);
-  const [genero, setGenero] = useState('Ficção Científica');
-const [mostrarGenero, setMostrarGenero] = useState(false);
-  const [nota, setNota] = useState('');
-  const [urlCapa, setUrlCapa] = useState('');
-  const [sinopse, setSinopse] = useState('');
+  const [genero, setGenero] = useState("Ficção Científica");
+  const [mostrarGenero, setMostrarGenero] = useState(false);
+  const [ano, setAno] = useState("");
+  const [nota, setNota] = useState("");
+  const [urlCapa, setUrlCapa] = useState("");
+  const [sinopse, setSinopse] = useState("");
 
-  const handleAdicionar = () => {
+  function handleAdicionar() {
     Alert.alert(
-      'Sucesso',
-      `${titulo} foi preparado para ser adicionado ao catálogo.`
+      "Sucesso",
+      `${titulo || "O título"} foi preparado para ser adicionado ao catálogo.`,
     );
-  };
+  }
 
-  const limparCampos = () => {
-  setTitulo('');
-  setTipo('Filme');
-  setNota('');
-  setUrlCapa('');
-  setSinopse('');
-  setMostrarTipo(false);
-};
+  function limparCampos() {
+    setTitulo("");
+    setTipo("Filme");
+    setGenero("Ficção Científica");
+    setAno("");
+    setNota("");
+    setUrlCapa("");
+    setSinopse("");
+    setMostrarTipo(false);
+    setMostrarGenero(false);
+  }
 
   return (
-    <ThemedView style={styles.container}>
+    <View style={styles.container}>
       <ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.scrollContent}
       >
         <View style={styles.header}>
-  <TouchableOpacity
-    style={styles.backButton}
-    onPress={() => router.back()}
-  >
-   
+          <TouchableOpacity
+            style={styles.backButton}
+            onPress={() => router.replace("/")}
+          >
+            <ArrowLeft size={20} color="#94A3B8" />
+            <Text style={styles.backText}>Voltar</Text>
+          </TouchableOpacity>
 
-    <ThemedText style={styles.backText}>
-     ← Voltar
-    </ThemedText>
-  </TouchableOpacity>
+          <Text style={styles.title}>Adicionar título</Text>
+          <Text style={styles.description}>
+            Cadastre um novo filme ou série no catálogo.
+          </Text>
+        </View>
 
-  <ThemedText style={styles.title}>
-    Adicionar ao Catálogo
-  </ThemedText>
-</View>
-
-        <ThemedText style={styles.description}>
-          Cadastre um novo filme ou série no catálogo.
-        </ThemedText>
-
-        <ThemedText style={styles.label}>TÍTULO *</ThemedText>
+        <Text style={styles.label}>TÍTULO *</Text>
         <TextInput
           style={styles.input}
           placeholder="Ex: Interestelar"
@@ -78,118 +74,93 @@ const [mostrarGenero, setMostrarGenero] = useState(false);
 
         <View style={styles.row}>
           <View style={styles.half}>
-            <ThemedText style={styles.label}>TIPO</ThemedText>
+            <Text style={styles.label}>TIPO</Text>
 
-            <TouchableOpacity
-              style={styles.selectContainer}
-              onPress={() => setMostrarTipo(!mostrarTipo)}
-            >
-              <ThemedText style={styles.selectText}>
-                {tipo}
-              </ThemedText>
+            <View style={styles.accordion}>
+              <TouchableOpacity
+                style={styles.accordionHeader}
+                onPress={() => setMostrarTipo(!mostrarTipo)}
+              >
+                <Text style={styles.selectText}>{tipo}</Text>
+                <ChevronDown size={16} color="#7A8395" />
+              </TouchableOpacity>
 
-              <ThemedText style={styles.arrow}>
-                ▼
-              </ThemedText>
-            </TouchableOpacity>
-
-            {mostrarTipo && (
-              <View style={styles.dropdown}>
-                <TouchableOpacity
-                  style={styles.dropdownItem}
-                  onPress={() => {
-                    setTipo('Filme');
-                    setMostrarTipo(false);
-                  }}
-                >
-                  <ThemedText style={styles.dropdownText}>
-                    Filme
-                  </ThemedText>
-                </TouchableOpacity>
-
-                <TouchableOpacity
-                  style={styles.dropdownItem}
-                  onPress={() => {
-                    setTipo('Série');
-                    setMostrarTipo(false);
-                  }}
-                >
-                  <ThemedText style={styles.dropdownText}>
-                    Série
-                  </ThemedText>
-                </TouchableOpacity>
-              </View>
-            )}
+              {mostrarTipo && (
+                <View style={styles.accordionContent}>
+                  {["Filme", "Série"].map((item) => (
+                    <TouchableOpacity
+                      key={item}
+                      style={styles.accordionItem}
+                      onPress={() => {
+                        setTipo(item);
+                        setMostrarTipo(false);
+                      }}
+                    >
+                      <Text style={styles.dropdownText}>{item}</Text>
+                    </TouchableOpacity>
+                  ))}
+                </View>
+              )}
+            </View>
           </View>
 
           <View style={styles.half}>
-            <ThemedText style={styles.label}>ANO</ThemedText>
+            <Text style={styles.label}>ANO</Text>
 
             <TextInput
-  style={styles.input}
-  placeholder="2026"
-  placeholderTextColor="#7A8395"
-  keyboardType="numeric"
-  maxLength={4}
-/>
+              style={styles.input}
+              placeholder="2026"
+              placeholderTextColor="#7A8395"
+              value={ano}
+              onChangeText={setAno}
+              keyboardType="numeric"
+              maxLength={4}
+            />
           </View>
         </View>
 
         <View style={styles.row}>
           <View style={styles.half}>
-  <ThemedText style={styles.label}>GÊNERO</ThemedText>
+            <Text style={styles.label}>GÊNERO</Text>
 
-  <TouchableOpacity
-    style={styles.selectContainer}
-    onPress={() => setMostrarGenero(!mostrarGenero)}
-  >
-    <ThemedText style={styles.selectText}>
-      {genero}
-    </ThemedText>
+            <View style={styles.accordion}>
+              <TouchableOpacity
+                style={styles.accordionHeader}
+                onPress={() => setMostrarGenero(!mostrarGenero)}
+              >
+                <Text style={styles.selectText} numberOfLines={1}>
+                  {genero}
+                </Text>
+                <ChevronDown size={16} color="#7A8395" />
+              </TouchableOpacity>
 
-    <ThemedText style={styles.arrow}>
-      ▼
-    </ThemedText>
-  </TouchableOpacity>
-
-  {mostrarGenero && (
-    <View style={styles.dropdown}>
-      {[
-        'Ação',
-        'Aventura',
-        'Comédia',
-        'Drama',
-        'Fantasia',
-        'Ficção Científica',
-        'Romance',
-        'Suspense',
-        'Terror',
-        'Documentário',
-        'Animação',
-      ].map((item) => (
-        <TouchableOpacity
-          key={item}
-          style={styles.dropdownItem}
-          onPress={() => {
-            setGenero(item);
-            setMostrarGenero(false);
-          }}
-        >
-          <ThemedText style={styles.dropdownText}>
-            {item}
-          </ThemedText>
-        </TouchableOpacity>
-      ))}
-    </View>
-  )}
-</View>
+              {mostrarGenero && (
+                <View style={styles.accordionContent}>
+                  {["Ação", "Aventura", "Comédia", "Drama", "Fantasia"].map(
+                    (item) => (
+                      <TouchableOpacity
+                        key={item}
+                        style={styles.accordionItem}
+                        onPress={() => {
+                          setGenero(item);
+                          setMostrarGenero(false);
+                        }}
+                      >
+                        <Text style={styles.dropdownText}>{item}</Text>
+                      </TouchableOpacity>
+                    ),
+                  )}
+                </View>
+              )}
+            </View>
+          </View>
 
           <View style={styles.half}>
-            <ThemedText style={styles.label}>NOTA (0-10)</ThemedText>
+            <Text style={styles.label}>NOTA</Text>
 
             <TextInput
               style={styles.input}
-              placeholder="0"
+              placeholder="0 a 10"
               placeholderTextColor="#7A8395"
               value={nota}
               onChangeText={setNota}
@@ -198,7 +169,7 @@ const [mostrarGenero, setMostrarGenero] = useState(false);
           </View>
         </View>
 
-        <ThemedText style={styles.label}>URL DA CAPA</ThemedText>
+        <Text style={styles.label}>URL DA CAPA</Text>
         <TextInput
           style={styles.input}
           placeholder="https://"
@@ -207,7 +178,7 @@ const [mostrarGenero, setMostrarGenero] = useState(false);
           onChangeText={setUrlCapa}
         />
 
-        <ThemedText style={styles.label}>SINOPSE</ThemedText>
+        <Text style={styles.label}>SINOPSE</Text>
         <TextInput
           style={styles.textArea}
           placeholder="Resumo da história"
@@ -218,178 +189,167 @@ const [mostrarGenero, setMostrarGenero] = useState(false);
         />
 
         <View style={styles.buttonsContainer}>
-          <TouchableOpacity
-            style={styles.addButton}
-            onPress={handleAdicionar}
-          >
-            <ThemedText style={styles.buttonText}>
-              Adicionar ao catálogo
-            </ThemedText>
+          <TouchableOpacity style={styles.addButton} onPress={handleAdicionar}>
+            <Text style={styles.buttonText}>Adicionar ao catálogo</Text>
           </TouchableOpacity>
 
-          <TouchableOpacity
-  style={styles.cancelButton}
-  onPress={limparCampos}
->
-  <ThemedText style={styles.buttonText}>
-    Cancelar
-  </ThemedText>
-</TouchableOpacity>
+          <TouchableOpacity style={styles.cancelButton} onPress={limparCampos}>
+            <Text style={styles.buttonText}>Cancelar</Text>
+          </TouchableOpacity>
         </View>
       </ScrollView>
-    </ThemedView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#0F172A',
+    backgroundColor: "#0F172A",
   },
 
   scrollContent: {
-    paddingHorizontal: 22,
-    paddingTop: 70,
-    paddingBottom: 40,
+    paddingHorizontal: 24,
+    paddingTop: 20,
+    paddingBottom: 120,
   },
 
   header: {
-  marginTop: 15,
-  gap: 6,
-},
+    gap: 3,
+    marginBottom: 10,
+  },
 
-backButton: {
-  flexDirection: 'row',
-  alignItems: 'center',
-  gap: 5,
-},
+  backButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 5,
+  },
 
-backText: {
-  color: '#94A3B8',
-  fontSize: 14,
-},
+  backText: {
+    color: "#94A3B8",
+    fontSize: 14,
+  },
 
   title: {
-  fontSize: 28,
-  fontWeight: '800',
-  color: '#FFFFFF',
-  lineHeight: 32,
-},
+    color: "#FFFFFF",
+    fontSize: 34,
+    fontWeight: "800",
+  },
 
   description: {
-    color: '#9AA4B2',
+    color: "#9AA4B2",
     fontSize: 15,
-    marginTop: 2,
-    marginBottom: 18,
+    marginBottom: 8,
   },
 
   label: {
-    color: '#94A3B8',
+    color: "#94A3B8",
     fontSize: 12,
-    fontWeight: '600',
+    fontWeight: "700",
     marginBottom: 8,
     marginTop: 16,
   },
 
   row: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "flex-start",
   },
 
   half: {
-    width: '48%',
+    width: "48%",
   },
 
   input: {
-    backgroundColor: '#0B1325',
-    borderWidth: 1,
-    borderColor: '#1B2740',
-    borderRadius: 12,
-    paddingHorizontal: 14,
-    paddingVertical: 15,
-    color: '#FFFFFF',
-  },
-
-  selectContainer: {
-    backgroundColor: '#0B1325',
-    borderWidth: 1,
-    borderColor: '#1B2740',
-    borderRadius: 12,
     height: 52,
+    backgroundColor: "#0B1325",
+    borderWidth: 1,
+    borderColor: "#1B2740",
+    borderRadius: 14,
     paddingHorizontal: 14,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-
-  selectText: {
-    color: '#FFFFFF',
+    color: "#FFFFFF",
     fontSize: 15,
   },
 
-  arrow: {
-    color: '#7A8395',
-    fontSize: 11,
+  accordion: {
+    width: "100%",
+    backgroundColor: "#0B1325",
+    borderWidth: 1,
+    borderColor: "#1B2740",
+    borderRadius: 14,
+    overflow: "hidden",
   },
 
-  dropdown: {
-  backgroundColor: '#0B1325',
-  borderWidth: 1,
-  borderColor: '#1B2740',
-  borderRadius: 12,
-  marginTop: 6,
-  overflow: 'hidden',
-},
+  accordionHeader: {
+    height: 52,
+    paddingHorizontal: 14,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: 8,
+  },
 
-  dropdownItem: {
-    paddingVertical: 12,
+  accordionContent: {
+    borderTopWidth: 1,
+    borderTopColor: "#1B2740",
+  },
+
+  accordionItem: {
+    paddingVertical: 13,
     paddingHorizontal: 14,
   },
 
+  selectText: {
+    color: "#FFFFFF",
+    fontSize: 15,
+    flex: 1,
+  },
+
   dropdownText: {
-    color: '#FFFFFF',
+    color: "#FFFFFF",
     fontSize: 14,
   },
 
   textArea: {
-    backgroundColor: '#0B1325',
+    backgroundColor: "#0B1325",
     borderWidth: 1,
-    borderColor: '#1B2740',
-    borderRadius: 12,
+    borderColor: "#1B2740",
+    borderRadius: 14,
     padding: 14,
     height: 130,
-    color: '#FFFFFF',
-    textAlignVertical: 'top',
+    color: "#FFFFFF",
+    textAlignVertical: "top",
+    fontSize: 15,
   },
 
   buttonsContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    justifyContent: "space-between",
     marginTop: 30,
+    gap: 12,
   },
 
   addButton: {
     flex: 1,
-    backgroundColor: '#FF1F3D',
+    backgroundColor: "#FF1F3D",
     paddingVertical: 16,
-    borderRadius: 14,
-    alignItems: 'center',
-    marginRight: 12,
+    borderRadius: 999,
+    alignItems: "center",
   },
 
   cancelButton: {
     width: 110,
-    backgroundColor: '#111B2D',
+    backgroundColor: "#111B2D",
     borderWidth: 1,
-    borderColor: '#24324D',
+    borderColor: "#24324D",
     paddingVertical: 16,
-    borderRadius: 14,
-    alignItems: 'center',
+    borderRadius: 999,
+    alignItems: "center",
   },
 
   buttonText: {
-    color: '#FFFFFF',
-    fontWeight: '600',
+    color: "#FFFFFF",
+    fontWeight: "700",
     fontSize: 15,
   },
 });
