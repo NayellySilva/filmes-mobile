@@ -1,4 +1,6 @@
+import { useEffect, useState } from "react";
 import {
+  Alert,
   ImageBackground,
   SafeAreaView,
   ScrollView,
@@ -6,24 +8,144 @@ import {
   Text,
   TouchableOpacity,
   View,
+  ActivityIndicator,
+  Platform,
 } from "react-native";
-import { Heart, Play, Trash2 } from "lucide-react-native";
-import { useState } from "react";
+import { Heart, Play, Trash2, ArrowLeft } from "lucide-react-native";
+import { useLocalSearchParams, useRouter } from "expo-router";
 import DetailActionButton from "../components/DetailActionButton";
+import api from "../services/api";
+
+type Movie = {
+  id: string;
+  titulo: string;
+  genero: string;
+  ano: number;
+  nota: number;
+  tipo: string;
+  capa: string;
+  sinopse: string;
+  favorito: boolean;
+};
 
 export default function Detalhes() {
+  const { id } = useLocalSearchParams();
+  const router = useRouter();
+  const [movie, setMovie] = useState<Movie | null>(null);
+  const [loading, setLoading] = useState(true);
   const [favoritado, setFavoritado] = useState(false);
 
-  function alternarFavorito() {
-    setFavoritado(!favoritado);
+  useEffect(() => {
+    if (id) {
+      fetchMovieDetail();
+    }
+  }, [id]);
+
+  async function fetchMovieDetail() {
+    try {
+      setLoading(true);
+      const response = await api.get(`/filmes/${id}`);
+      setMovie(response.data);
+      setFavoritado(!!response.data.favorito);
+    } catch (error) {
+      console.error("Erro ao buscar detalhes do filme:", error);
+      Alert.alert("Erro", "Não foi possível carregar os detalhes deste título.");
+      router.replace("/");
+    } finally {
+      setLoading(false);
+    }
   }
+
+  async function alternarFavorito() {
+    if (!movie) return;
+
+    const nextFavoriteState = !favoritado;
+    setFavoritado(nextFavoriteState);
+
+    try {
+      await api.patch(`/filmes/${movie.id}`, {
+        favorito: nextFavoriteState,
+      });
+    } catch (error) {
+      console.error("Erro ao favoritar:", error);
+      setFavoritado(!nextFavoriteState);
+    }
+  }
+
+  function handleExcluir() {
+    if (!movie) return;
+
+    const executarExclusao = async () => {
+      try {
+        await api.delete(`/filmes/${movie.id}`);
+        if (Platform.OS === "web") {
+          alert("Título excluído com sucesso.");
+        } else {
+          Alert.alert("Sucesso", "Título excluído com sucesso.");
+        }
+        router.replace("/");
+      } catch (error) {
+        console.error("Erro ao excluir título:", error);
+        if (Platform.OS === "web") {
+          alert("Não foi possível excluir o título do catálogo.");
+        } else {
+          Alert.alert("Erro", "Não foi possível excluir o título do catálogo.");
+        }
+      }
+    };
+
+    if (Platform.OS === "web") {
+      const confirmar = window.confirm(
+        `Tem certeza de que deseja remover "${movie.titulo}" do catálogo?`
+      );
+      if (confirmar) {
+        executarExclusao();
+      }
+    } else {
+      Alert.alert(
+        "Excluir título",
+        `Tem certeza de que deseja remover "${movie.titulo}" do catálogo?`,
+        [
+          { text: "Cancelar", style: "cancel" },
+          {
+            text: "Excluir",
+            style: "destructive",
+            onPress: executarExclusao,
+          },
+        ]
+      );
+    }
+  }
+
+  if (loading) {
+    return (
+      <SafeAreaView style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color="#FF1F3D" />
+      </SafeAreaView>
+    );
+  }
+
+  if (!movie) {
+    return (
+      <SafeAreaView style={styles.loadingContainer}>
+        <Text style={{ color: "#FFFFFF" }}>Título não encontrado.</Text>
+      </SafeAreaView>
+    );
+  }
+
   return (
     <SafeAreaView style={styles.container}>
+      <TouchableOpacity
+        style={styles.backButton}
+        onPress={() => router.replace("/")}
+        activeOpacity={0.7}
+      >
+        <ArrowLeft size={22} color="#FFFFFF" />
+      </TouchableOpacity>
+
       <ScrollView showsVerticalScrollIndicator={false}>
         <ImageBackground
-          source={{
-            uri: "https://ingresso-a.akamaihd.net/prd/img/movie/michael/a10e5eb8-6bef-4612-9288-5eae9dfe0377.webp",
-          }}
+          source={{ uri: movie.capa }}
           style={styles.banner}
           resizeMode="cover"
         >
@@ -33,22 +155,22 @@ export default function Detalhes() {
         <View style={styles.content}>
           <View style={styles.posterArea}>
             <ImageBackground
-              source={{
-                uri: "https://ingresso-a.akamaihd.net/prd/img/movie/michael/a10e5eb8-6bef-4612-9288-5eae9dfe0377.webp",
-              }}
+              source={{ uri: movie.capa }}
               style={styles.poster}
               imageStyle={styles.posterImage}
             />
 
             <View style={styles.info}>
               <View style={styles.row}>
-                <Text style={styles.badge}>FILME</Text>
-                <Text style={styles.year}>2026</Text>
+                <Text style={styles.badge}>{movie.tipo.toUpperCase()}</Text>
+                <Text style={styles.year}>{movie.ano}</Text>
               </View>
 
-              <Text style={styles.title}>Michael</Text>
-              <Text style={styles.genre}>Drama</Text>
-              <Text style={styles.rating}>⭐ 9.8</Text>
+              <Text style={styles.title} numberOfLines={2}>
+                {movie.titulo}
+              </Text>
+              <Text style={styles.genre}>{movie.genero}</Text>
+              <Text style={styles.rating}>⭐ {Number(movie.nota).toFixed(1)}</Text>
             </View>
           </View>
 
@@ -68,17 +190,20 @@ export default function Detalhes() {
                 label="Excluir"
                 icon={Trash2}
                 variant="outline"
+                onPress={handleExcluir}
               />
             </View>
           </View>
 
-          <DetailActionButton label="Assistir" icon={Play} variant="light" />
+          <DetailActionButton
+            label="Assistir"
+            icon={Play}
+            variant="light"
+            onPress={() => Alert.alert("Assistir", `Iniciando reprodução de ${movie.titulo}...`)}
+          />
+
           <Text style={styles.description}>
-            Cinebiografia do Rei do Pop, Michael Jackson. O longa traz uma
-            representação de sua vida e do legado, contando sua história além da
-            música, traçando sua jornada desde a descoberta de seu talento até
-            se tornar o artista visionário, cuja ambição criativa alimentou uma
-            busca incansável para se tornar o maior artista do mundo.
+            {movie.sinopse || "Nenhuma sinopse disponível para este título."}
           </Text>
         </View>
       </ScrollView>
@@ -91,19 +216,39 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#0F172A",
   },
+  loadingContainer: {
+    flex: 1,
+    backgroundColor: "#0F172A",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  backButton: {
+    position: "absolute",
+    top: 45,
+    left: 20,
+    zIndex: 10,
+    backgroundColor: "rgba(15, 23, 42, 0.65)",
+    borderWidth: 1,
+    borderColor: "rgba(255, 255, 255, 0.15)",
+    width: 42,
+    height: 42,
+    borderRadius: 21,
+    justifyContent: "center",
+    alignItems: "center",
+  },
   banner: {
-    height: 460,
+    height: 400,
     width: "100%",
     backgroundColor: "#000",
   },
   overlay: {
     flex: 1,
-    backgroundColor: "rgba(0,0,0,0.55)",
+    backgroundColor: "rgba(15, 23, 42, 0.6)",
   },
   content: {
     paddingHorizontal: 20,
     marginTop: -95,
-    paddingBottom: 32,
+    paddingBottom: 40,
   },
   posterArea: {
     flexDirection: "row",
@@ -116,6 +261,8 @@ const styles = StyleSheet.create({
   },
   posterImage: {
     borderRadius: 14,
+    borderWidth: 1,
+    borderColor: "rgba(255, 255, 255, 0.15)",
   },
   info: {
     flex: 1,
@@ -142,8 +289,9 @@ const styles = StyleSheet.create({
   },
   title: {
     color: "#FFFFFF",
-    fontSize: 30,
+    fontSize: 26,
     fontWeight: "800",
+    lineHeight: 32,
   },
   genre: {
     color: "#D1D5DB",
@@ -153,7 +301,7 @@ const styles = StyleSheet.create({
   rating: {
     color: "#FACC15",
     fontSize: 14,
-    marginTop: 12,
+    marginTop: 10,
     fontWeight: "700",
   },
   actions: {
@@ -164,7 +312,7 @@ const styles = StyleSheet.create({
   description: {
     color: "#CBD5E1",
     fontSize: 15,
-    lineHeight: 30,
-    marginTop: 26,
+    lineHeight: 24,
+    marginTop: 20,
   },
 });
