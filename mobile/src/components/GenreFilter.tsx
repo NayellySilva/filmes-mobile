@@ -1,24 +1,42 @@
 import { ScrollView, StyleSheet, Text, TouchableOpacity } from "react-native";
 
-const generos = ["Todos", "Ação", "Animação", "Comédia"];
+const generos = [
+  "Todos",
+  "Ação",
+  "Aventura",
+  "Comédia",
+  "Drama",
+  "Fantasia",
+  "Ficção Científica",
+];
 
-export default function GenreFilter() {
+type Props = {
+  selectedGenre: string;
+  onSelectGenre: (genre: string) => void;
+};
+
+export default function GenreFilter({ selectedGenre, onSelectGenre }: Props) {
   return (
     <ScrollView
       horizontal
       showsHorizontalScrollIndicator={false}
       contentContainerStyle={styles.container}
     >
-      {generos.map((item, index) => (
-        <TouchableOpacity
-          key={item}
-          style={[styles.button, index === 0 && styles.buttonActive]}
-        >
-          <Text style={[styles.text, index === 0 && styles.textActive]}>
-            {item}
-          </Text>
-        </TouchableOpacity>
-      ))}
+      {generos.map((item) => {
+        const active = item === selectedGenre;
+        return (
+          <TouchableOpacity
+            key={item}
+            style={[styles.button, active && styles.buttonActive]}
+            onPress={() => onSelectGenre(item)}
+            activeOpacity={0.7}
+          >
+            <Text style={[styles.text, active && styles.textActive]}>
+              {item}
+            </Text>
+          </TouchableOpacity>
+        );
+      })}
     </ScrollView>
   );
 }

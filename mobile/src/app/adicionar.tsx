@@ -1,6 +1,7 @@
 import { router } from "expo-router";
-import { ChevronDown, ArrowLeft } from "lucide-react-native";
+import { ArrowLeft } from "lucide-react-native";
 import { useState } from "react";
+import api from "../services/api";
 
 import {
   Alert,
@@ -10,24 +11,84 @@ import {
   TextInput,
   TouchableOpacity,
   View,
+  Platform,
 } from "react-native";
 
 export default function Adicionar() {
   const [titulo, setTitulo] = useState("");
   const [tipo, setTipo] = useState("Filme");
-  const [mostrarTipo, setMostrarTipo] = useState(false);
   const [genero, setGenero] = useState("Ficção Científica");
-  const [mostrarGenero, setMostrarGenero] = useState(false);
   const [ano, setAno] = useState("");
   const [nota, setNota] = useState("");
   const [urlCapa, setUrlCapa] = useState("");
   const [sinopse, setSinopse] = useState("");
 
-  function handleAdicionar() {
-    Alert.alert(
-      "Sucesso",
-      `${titulo || "O título"} foi preparado para ser adicionado ao catálogo.`,
-    );
+  async function handleAdicionar() {
+    if (!titulo.trim() || !urlCapa.trim() || !ano.trim()) {
+      if (Platform.OS === "web") {
+        alert("Por favor, preencha o Título, o Ano e a URL da Capa.");
+      } else {
+        Alert.alert("Erro", "Por favor, preencha o Título, o Ano e a URL da Capa.");
+      }
+      return;
+    }
+
+    const anoNum = parseInt(ano, 10);
+    const notaNum = parseFloat(nota.replace(",", ".")) || 0;
+
+    if (isNaN(anoNum) || anoNum < 1888 || anoNum > 2100) {
+      if (Platform.OS === "web") {
+        alert("Por favor, insira um ano de lançamento válido.");
+      } else {
+        Alert.alert("Erro", "Por favor, insira um ano de lançamento válido.");
+      }
+      return;
+    }
+
+    if (notaNum < 0 || notaNum > 10) {
+      if (Platform.OS === "web") {
+        alert("Por favor, insira uma nota de 0 a 10.");
+      } else {
+        Alert.alert("Erro", "Por favor, insira uma nota de 0 a 10.");
+      }
+      return;
+    }
+
+    try {
+      await api.post("/filmes", {
+        titulo: titulo.trim(),
+        tipo,
+        genero,
+        ano: anoNum,
+        nota: notaNum,
+        capa: urlCapa.trim(),
+        sinopse: sinopse.trim(),
+        favorito: false,
+      });
+
+      if (Platform.OS === "web") {
+        alert(`"${titulo}" foi adicionado com sucesso ao catálogo!`);
+        limparCampos();
+        router.replace("/");
+      } else {
+        Alert.alert("Sucesso", `"${titulo}" foi adicionado com sucesso ao catálogo!`, [
+          {
+            text: "OK",
+            onPress: () => {
+              limparCampos();
+              router.replace("/");
+            },
+          },
+        ]);
+      }
+    } catch (error) {
+      console.error("Erro ao adicionar título:", error);
+      if (Platform.OS === "web") {
+        alert("Não foi possível salvar o título no servidor.");
+      } else {
+        Alert.alert("Erro", "Não foi possível salvar o título no servidor.");
+      }
+    }
   }
 
   function limparCampos() {
@@ -38,8 +99,6 @@ export default function Adicionar() {
     setNota("");
     setUrlCapa("");
     setSinopse("");
-    setMostrarTipo(false);
-    setMostrarGenero(false);
   }
 
   return (
@@ -52,6 +111,7 @@ export default function Adicionar() {
           <TouchableOpacity
             style={styles.backButton}
             onPress={() => router.replace("/")}
+            activeOpacity={0.7}
           >
             <ArrowLeft size={20} color="#94A3B8" />
             <Text style={styles.backText}>Voltar</Text>
@@ -75,38 +135,27 @@ export default function Adicionar() {
         <View style={styles.row}>
           <View style={styles.half}>
             <Text style={styles.label}>TIPO</Text>
-
-            <View style={styles.accordion}>
-              <TouchableOpacity
-                style={styles.accordionHeader}
-                onPress={() => setMostrarTipo(!mostrarTipo)}
-              >
-                <Text style={styles.selectText}>{tipo}</Text>
-                <ChevronDown size={16} color="#7A8395" />
-              </TouchableOpacity>
-
-              {mostrarTipo && (
-                <View style={styles.accordionContent}>
-                  {["Filme", "Série"].map((item) => (
-                    <TouchableOpacity
-                      key={item}
-                      style={styles.accordionItem}
-                      onPress={() => {
-                        setTipo(item);
-                        setMostrarTipo(false);
-                      }}
-                    >
-                      <Text style={styles.dropdownText}>{item}</Text>
-                    </TouchableOpacity>
-                  ))}
-                </View>
-              )}
+            <View style={styles.tipoContainer}>
+              {["Filme", "Série"].map((item) => {
+                const active = tipo === item;
+                return (
+                  <TouchableOpacity
+                    key={item}
+                    style={[styles.tipoButton, active && styles.tipoButtonActive]}
+                    onPress={() => setTipo(item)}
+                    activeOpacity={0.7}
+                  >
+                    <Text style={[styles.tipoText, active && styles.tipoTextActive]}>
+                      {item}
+                    </Text>
+                  </TouchableOpacity>
+                );
+              })}
             </View>
           </View>
 
           <View style={styles.half}>
-            <Text style={styles.label}>ANO</Text>
-
+            <Text style={styles.label}>ANO *</Text>
             <TextInput
               style={styles.input}
               placeholder="2026"
@@ -119,57 +168,38 @@ export default function Adicionar() {
           </View>
         </View>
 
-        <View style={styles.row}>
-          <View style={styles.half}>
-            <Text style={styles.label}>GÊNERO</Text>
-
-            <View style={styles.accordion}>
-              <TouchableOpacity
-                style={styles.accordionHeader}
-                onPress={() => setMostrarGenero(!mostrarGenero)}
-              >
-                <Text style={styles.selectText} numberOfLines={1}>
-                  {genero}
-                </Text>
-                <ChevronDown size={16} color="#7A8395" />
-              </TouchableOpacity>
-
-              {mostrarGenero && (
-                <View style={styles.accordionContent}>
-                  {["Ação", "Aventura", "Comédia", "Drama", "Fantasia"].map(
-                    (item) => (
-                      <TouchableOpacity
-                        key={item}
-                        style={styles.accordionItem}
-                        onPress={() => {
-                          setGenero(item);
-                          setMostrarGenero(false);
-                        }}
-                      >
-                        <Text style={styles.dropdownText}>{item}</Text>
-                      </TouchableOpacity>
-                    ),
-                  )}
-                </View>
-              )}
-            </View>
-          </View>
-
-          <View style={styles.half}>
-            <Text style={styles.label}>NOTA</Text>
-
-            <TextInput
-              style={styles.input}
-              placeholder="0 a 10"
-              placeholderTextColor="#7A8395"
-              value={nota}
-              onChangeText={setNota}
-              keyboardType="numeric"
-            />
-          </View>
+        <Text style={styles.label}>GÊNERO</Text>
+        <View style={styles.tagContainer}>
+          {["Ação", "Aventura", "Comédia", "Drama", "Fantasia", "Ficção Científica"].map(
+            (item) => {
+              const active = genero === item;
+              return (
+                <TouchableOpacity
+                  key={item}
+                  style={[styles.tagButton, active && styles.tagButtonActive]}
+                  onPress={() => setGenero(item)}
+                  activeOpacity={0.7}
+                >
+                  <Text style={[styles.tagText, active && styles.tagTextActive]}>
+                    {item}
+                  </Text>
+                </TouchableOpacity>
+              );
+            }
+          )}
         </View>
 
-        <Text style={styles.label}>URL DA CAPA</Text>
+        <Text style={styles.label}>NOTA</Text>
+        <TextInput
+          style={styles.input}
+          placeholder="Ex: 9.8"
+          placeholderTextColor="#7A8395"
+          value={nota}
+          onChangeText={setNota}
+          keyboardType="numeric"
+        />
+
+        <Text style={styles.label}>URL DA CAPA *</Text>
         <TextInput
           style={styles.input}
           placeholder="https://"
@@ -271,43 +301,65 @@ const styles = StyleSheet.create({
     fontSize: 15,
   },
 
-  accordion: {
-    width: "100%",
+  tipoContainer: {
+    flexDirection: "row",
+    gap: 8,
+  },
+
+  tipoButton: {
+    flex: 1,
+    height: 52,
     backgroundColor: "#0B1325",
     borderWidth: 1,
     borderColor: "#1B2740",
     borderRadius: 14,
-    overflow: "hidden",
+    justifyContent: "center",
+    alignItems: "center",
   },
 
-  accordionHeader: {
-    height: 52,
-    paddingHorizontal: 14,
+  tipoButtonActive: {
+    backgroundColor: "#FF1F3D",
+    borderColor: "#FF1F3D",
+  },
+
+  tipoText: {
+    color: "#7A8395",
+    fontSize: 15,
+    fontWeight: "600",
+  },
+
+  tipoTextActive: {
+    color: "#FFFFFF",
+  },
+
+  tagContainer: {
     flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
+    flexWrap: "wrap",
     gap: 8,
   },
 
-  accordionContent: {
-    borderTopWidth: 1,
-    borderTopColor: "#1B2740",
+  tagButton: {
+    backgroundColor: "#0B1325",
+    borderWidth: 1,
+    borderColor: "#1B2740",
+    borderRadius: 999,
+    paddingHorizontal: 16,
+    paddingVertical: 10,
   },
 
-  accordionItem: {
-    paddingVertical: 13,
-    paddingHorizontal: 14,
+  tagButtonActive: {
+    backgroundColor: "#FF1F3D",
+    borderColor: "#FF1F3D",
   },
 
-  selectText: {
-    color: "#FFFFFF",
-    fontSize: 15,
-    flex: 1,
-  },
-
-  dropdownText: {
-    color: "#FFFFFF",
+  tagText: {
+    color: "#7A8395",
     fontSize: 14,
+    fontWeight: "600",
+  },
+
+  tagTextActive: {
+    color: "#FFFFFF",
   },
 
   textArea: {

@@ -22,7 +22,7 @@ export default function Menu() {
           <TouchableOpacity
             key={item.label}
             style={styles.item}
-            onPress={() => router.push(item.route as any)}
+            onPress={() => router.replace(item.route as any)}
             activeOpacity={0.7}
           >
             <Icon
