@@ -28,12 +28,13 @@ type Movie = {
 };
 
 export default function Home() {
+  // Estados locais para armazenar a lista de filmes da API e gerenciar o filtro de gênero ativo
   const [movies, setMovies] = useState<Movie[]>([]);
   const [selectedGenre, setSelectedGenre] = useState("Todos");
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
 
-  // Fetch movies from server
+  // Busca a lista de filmes do servidor fake usando HTTP GET e mapeia as propriedades para os componentes
   const fetchMovies = async (showLoader = true) => {
     if (showLoader) setLoading(true);
     try {
@@ -49,7 +50,7 @@ export default function Home() {
         favorito: !!item.favorito,
         genero: item.genero,
       }));
-      setMovies(mapped);
+      setMovies(mapped); // Atualiza o estado dos filmes e dispara a re-renderização da interface
     } catch (error) {
       console.error("Erro ao carregar catálogo:", error);
     } finally {
@@ -58,6 +59,7 @@ export default function Home() {
     }
   };
 
+  // Busca e atualiza a lista de filmes do servidor fake toda vez que a tela entra em foco (reaberta)
   useFocusEffect(
     useCallback(() => {
       fetchMovies(movies.length === 0);

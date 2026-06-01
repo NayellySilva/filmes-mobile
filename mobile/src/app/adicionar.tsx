@@ -23,7 +23,9 @@ export default function Adicionar() {
   const [urlCapa, setUrlCapa] = useState("");
   const [sinopse, setSinopse] = useState("");
 
+  // Valida os campos obrigatórios e envia o novo filme via HTTP POST para a API
   async function handleAdicionar() {
+    // Validação de campos obrigatórios
     if (!titulo.trim() || !urlCapa.trim() || !ano.trim()) {
       if (Platform.OS === "web") {
         alert("Por favor, preencha o Título, o Ano e a URL da Capa.");
@@ -36,6 +38,7 @@ export default function Adicionar() {
     const anoNum = parseInt(ano, 10);
     const notaNum = parseFloat(nota.replace(",", ".")) || 0;
 
+    // Validação de regras de negócios simples
     if (isNaN(anoNum) || anoNum < 1888 || anoNum > 2100) {
       if (Platform.OS === "web") {
         alert("Por favor, insira um ano de lançamento válido.");
@@ -55,6 +58,7 @@ export default function Adicionar() {
     }
 
     try {
+      // Método HTTP POST enviando os dados em português estruturados para o JSON Server
       await api.post("/filmes", {
         titulo: titulo.trim(),
         tipo,
@@ -66,6 +70,7 @@ export default function Adicionar() {
         favorito: false,
       });
 
+      // Redirecionamento e feedback conforme o ambiente de teste (Web ou Celular)
       if (Platform.OS === "web") {
         alert(`"${titulo}" foi adicionado com sucesso ao catálogo!`);
         limparCampos();

@@ -29,24 +29,27 @@ type Movie = {
 };
 
 export default function Detalhes() {
+  // Lê o ID do filme passado como parâmetro de rota (query param) ao clicar no card
   const { id } = useLocalSearchParams();
   const router = useRouter();
   const [movie, setMovie] = useState<Movie | null>(null);
   const [loading, setLoading] = useState(true);
   const [favoritado, setFavoritado] = useState(false);
 
+  // Efeito para carregar os detalhes do filme sempre que o ID estiver disponível
   useEffect(() => {
     if (id) {
       fetchMovieDetail();
     }
   }, [id]);
 
+  // Requisição HTTP GET para obter as informações completas do filme selecionado
   async function fetchMovieDetail() {
     try {
       setLoading(true);
       const response = await api.get(`/filmes/${id}`);
       setMovie(response.data);
-      setFavoritado(!!response.data.favorito);
+      setFavoritado(!!response.data.favorito); // Define o estado inicial do coração
     } catch (error) {
       console.error("Erro ao buscar detalhes do filme:", error);
       Alert.alert("Erro", "Não foi possível carregar os detalhes deste título.");
@@ -56,34 +59,36 @@ export default function Detalhes() {
     }
   }
 
+  // Atualiza o estado de favorito no servidor fake via HTTP PATCH com atualização otimista na interface
   async function alternarFavorito() {
     if (!movie) return;
 
     const nextFavoriteState = !favoritado;
-    setFavoritado(nextFavoriteState);
+    setFavoritado(nextFavoriteState); // Atualização otimista na UI
 
     try {
       await api.patch(`/filmes/${movie.id}`, {
-        favorito: nextFavoriteState,
+        favorito: nextFavoriteState, // Envia a alteração para a propriedade favorito
       });
     } catch (error) {
       console.error("Erro ao favoritar:", error);
-      setFavoritado(!nextFavoriteState);
+      setFavoritado(!nextFavoriteState); // Reverte o estado caso a chamada falhe
     }
   }
 
+  // Exclui o filme do catálogo no servidor fake via HTTP DELETE e redireciona para a Home
   function handleExcluir() {
     if (!movie) return;
 
     const executarExclusao = async () => {
       try {
-        await api.delete(`/filmes/${movie.id}`);
+        await api.delete(`/filmes/${movie.id}`); // Chamada HTTP DELETE
         if (Platform.OS === "web") {
           alert("Título excluído com sucesso.");
         } else {
           Alert.alert("Sucesso", "Título excluído com sucesso.");
         }
-        router.replace("/");
+        router.replace("/"); // Redireciona e atualiza a Home automaticamente
       } catch (error) {
         console.error("Erro ao excluir título:", error);
         if (Platform.OS === "web") {
