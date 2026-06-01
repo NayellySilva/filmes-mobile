@@ -5,12 +5,32 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import { router } from "expo-router";
 
-export default function HeroBanner() {
+type Movie = {
+  id: string;
+  title: string;
+  year: number;
+  rating: number;
+  type: string;
+  imageUri: string;
+  description?: string;
+  favorito: boolean;
+};
+
+type Props = {
+  movie: Movie | null;
+};
+
+export default function HeroBanner({ movie }: Props) {
+  if (!movie) {
+    return null;
+  }
+
   return (
     <ImageBackground
       source={{
-        uri: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTv_xkjBRSpTHNbeiYUTTF45B5UMSAEFjsgGA&s",
+        uri: movie.imageUri,
       }}
       style={styles.banner}
       imageStyle={styles.bannerImage}
@@ -21,15 +41,21 @@ export default function HeroBanner() {
             <Text style={styles.badgeText}>Em destaque</Text>
           </View>
 
-          <Text style={styles.title}>Michael</Text>
+          <Text style={styles.title}>{movie.title}</Text>
 
-          <Text style={styles.description}>
-            Cinebiografia do Rei do Pop, Michael Jackson. O longa traz uma
-            representação de sua vida e do legado, contando sua história além da
-            música.
+          <Text style={styles.description} numberOfLines={3}>
+            {movie.description || "Sem sinopse disponível."}
           </Text>
 
-          <TouchableOpacity style={styles.button}>
+          <TouchableOpacity
+            style={styles.button}
+            onPress={() =>
+              router.push({
+                pathname: "/detalhes",
+                params: { id: movie.id },
+              })
+            }
+          >
             <Text style={styles.buttonText}>Ver Detalhes</Text>
           </TouchableOpacity>
         </View>

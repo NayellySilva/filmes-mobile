@@ -1,52 +1,36 @@
-import { StyleSheet, View } from "react-native";
+import { StyleSheet, View, Text } from "react-native";
 import MovieCard from "./MovieCard";
 
-const filmes = [
-  {
-    id: "1",
-    title: "Michael",
-    year: 2025,
-    rating: 9.8,
-    type: "FILME",
-    imageUri:
-      "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTv_xkjBRSpTHNbeiYUTTF45B5UMSAEFjsgGA&s",
-  },
-  {
-    id: "2",
-    title: "Michael",
-    year: 2025,
-    rating: 9.8,
-    type: "FILME",
-    imageUri:
-      "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTv_xkjBRSpTHNbeiYUTTF45B5UMSAEFjsgGA&s",
-  },
-  {
-    id: "3",
-    title: "Michael",
-    year: 2025,
-    rating: 9.8,
-    type: "FILME",
-    imageUri:
-      "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTv_xkjBRSpTHNbeiYUTTF45B5UMSAEFjsgGA&s",
-  },
-  {
-    id: "4",
-    title: "Michael",
-    year: 2025,
-    rating: 9.8,
-    type: "FILME",
-    imageUri:
-      "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTv_xkjBRSpTHNbeiYUTTF45B5UMSAEFjsgGA&s",
-  },
-];
+type Movie = {
+  id: string;
+  title: string;
+  year: number;
+  rating: number;
+  type: string;
+  imageUri: string;
+  favorito: boolean;
+};
 
-export default function MovieList() {
+type Props = {
+  movies: Movie[];
+  onFavoriteToggle?: () => void;
+};
+
+export default function MovieList({ movies, onFavoriteToggle }: Props) {
+  if (movies.length === 0) {
+    return (
+      <View style={styles.emptyContainer}>
+        <Text style={styles.emptyText}>Nenhum título encontrado.</Text>
+      </View>
+    );
+  }
+
   return (
     <View style={styles.container}>
       <View style={styles.grid}>
-        {filmes.map((filme) => (
+        {movies.map((filme) => (
           <View style={styles.cardWrapper} key={filme.id}>
-            <MovieCard movie={filme} />
+            <MovieCard movie={filme} onFavoriteToggle={onFavoriteToggle} />
           </View>
         ))}
       </View>
@@ -69,5 +53,17 @@ const styles = StyleSheet.create({
 
   cardWrapper: {
     width: "48.5%",
+  },
+
+  emptyContainer: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: 40,
+  },
+
+  emptyText: {
+    color: "#94A3B8",
+    fontSize: 15,
   },
 });

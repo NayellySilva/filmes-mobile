@@ -1,6 +1,8 @@
 import { Heart, Star } from "lucide-react-native";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { router } from "expo-router";
+import api from "../services/api";
 
 type Movie = {
   id: string;
@@ -9,22 +11,55 @@ type Movie = {
   rating: number;
   type: string;
   imageUri: string;
+  favorito: boolean;
 };
 
 type Props = {
   movie: Movie;
+  onFavoriteToggle?: () => void;
 };
 
-export default function MovieCard({ movie }: Props) {
-  const [favorited, setFavorited] = useState(false);
+export default function MovieCard({ movie, onFavoriteToggle }: Props) {
+  const [favorited, setFavorited] = useState(movie.favorito);
+
+  useEffect(() => {
+    setFavorited(movie.favorito);
+  }, [movie.favorito]);
+
+  async function handleToggleFavorite() {
+    const nextFavoriteState = !favorited;
+    setFavorited(nextFavoriteState);
+
+    try {
+      await api.patch(`/filmes/${movie.id}`, {
+        favorito: nextFavoriteState,
+      });
+      if (onFavoriteToggle) {
+        onFavoriteToggle();
+      }
+    } catch (error) {
+      console.error("Erro ao alternar favorito:", error);
+      // Revert state on error
+      setFavorited(!nextFavoriteState);
+    }
+  }
 
   return (
-    <TouchableOpacity style={styles.card} activeOpacity={0.8}>
+    <TouchableOpacity
+      style={styles.card}
+      activeOpacity={0.8}
+      onPress={() =>
+        router.push({
+          pathname: "/detalhes",
+          params: { id: movie.id },
+        })
+      }
+    >
       <Image source={{ uri: movie.imageUri }} style={styles.image} />
 
       <TouchableOpacity
         style={styles.heartButton}
-        onPress={() => setFavorited((prev) => !prev)}
+        onPress={handleToggleFavorite}
         hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
       >
         <Heart
