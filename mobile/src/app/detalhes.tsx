@@ -11,7 +11,7 @@ import {
   ActivityIndicator,
   Platform,
 } from "react-native";
-import { Heart, Play, Trash2, ArrowLeft } from "lucide-react-native";
+import { Heart, Play, Trash2, ArrowLeft, Star } from "lucide-react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import DetailActionButton from "../components/DetailActionButton";
 import api from "../services/api";
@@ -52,7 +52,10 @@ export default function Detalhes() {
       setFavoritado(!!response.data.favorito); // Define o estado inicial do coração
     } catch (error) {
       console.error("Erro ao buscar detalhes do filme:", error);
-      Alert.alert("Erro", "Não foi possível carregar os detalhes deste título.");
+      Alert.alert(
+        "Erro",
+        "Não foi possível carregar os detalhes deste título.",
+      );
       router.replace("/");
     } finally {
       setLoading(false);
@@ -101,7 +104,7 @@ export default function Detalhes() {
 
     if (Platform.OS === "web") {
       const confirmar = window.confirm(
-        `Tem certeza de que deseja remover "${movie.titulo}" do catálogo?`
+        `Tem certeza de que deseja remover "${movie.titulo}" do catálogo?`,
       );
       if (confirmar) {
         executarExclusao();
@@ -117,7 +120,7 @@ export default function Detalhes() {
             style: "destructive",
             onPress: executarExclusao,
           },
-        ]
+        ],
       );
     }
   }
@@ -175,7 +178,12 @@ export default function Detalhes() {
                 {movie.titulo}
               </Text>
               <Text style={styles.genre}>{movie.genero}</Text>
-              <Text style={styles.rating}>⭐ {Number(movie.nota).toFixed(1)}</Text>
+              <View style={styles.rating}>
+                <Star size={11} color="#F59E0B" fill="#F59E0B" />
+                <Text style={styles.ratingText}>
+                  {Number(movie.nota).toFixed(1)}
+                </Text>
+              </View>
             </View>
           </View>
 
@@ -204,7 +212,12 @@ export default function Detalhes() {
             label="Assistir"
             icon={Play}
             variant="light"
-            onPress={() => Alert.alert("Assistir", `Iniciando reprodução de ${movie.titulo}...`)}
+            onPress={() =>
+              Alert.alert(
+                "Assistir",
+                `Iniciando reprodução de ${movie.titulo}...`,
+              )
+            }
           />
 
           <Text style={styles.description}>
@@ -304,9 +317,14 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
   rating: {
-    color: "#FACC15",
-    fontSize: 14,
     marginTop: 10,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
+  },
+  ratingText: {
+    color: "#F59E0B",
+    fontSize: 14,
     fontWeight: "700",
   },
   actions: {
