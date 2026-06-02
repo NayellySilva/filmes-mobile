@@ -4,6 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
+    "start": "json-server db.json --port 3000 --host 0.0.0.0",
+    "dev": "json-server --watch db.json --port 3000 --host 0.0.0.0",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],

@@ -1,16 +1,17 @@
 import { useState, useCallback } from "react";
+import { ArrowLeft } from "lucide-react-native";
 import {
   SafeAreaView,
   ScrollView,
-  StatusBar,
   StyleSheet,
-  ActivityIndicator,
+  Text,
+  TouchableOpacity,
   View,
+  ActivityIndicator,
   RefreshControl,
 } from "react-native";
-import { useFocusEffect } from "expo-router";
+import { useFocusEffect, useRouter } from "expo-router";
 
-import HeroBanner from "../components/HeroBanner";
 import GenreFilter from "../components/GenreFilter";
 import MovieList from "../components/MovieList";
 import api from "../services/api";
@@ -27,18 +28,17 @@ type Movie = {
   genero: string;
 };
 
-export default function Home() {
-  // Estados locais para armazenar a lista de filmes da API e gerenciar o filtro de gênero ativo
+export default function Favoritos() {
+  const router = useRouter();
   const [movies, setMovies] = useState<Movie[]>([]);
   const [selectedGenre, setSelectedGenre] = useState("Todos");
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
 
-  // Busca a lista de filmes do servidor fake usando HTTP GET e mapeia as propriedades para os componentes
-  const fetchMovies = async (showLoader = true) => {
+  const fetchFavorites = async (showLoader = true) => {
     if (showLoader) setLoading(true);
     try {
-      const response = await api.get("/filmes");
+      const response = await api.get("/filmes?favorito=true");
       const mapped = response.data.map((item: any) => ({
         id: String(item.id),
         title: item.titulo,
@@ -50,25 +50,24 @@ export default function Home() {
         favorito: !!item.favorito,
         genero: item.genero,
       }));
-      setMovies(mapped); // Atualiza o estado dos filmes e dispara a re-renderização da interface
+      setMovies(mapped);
     } catch (error) {
-      console.error("Erro ao carregar catálogo:", error);
+      console.error("Erro ao carregar favoritos:", error);
     } finally {
       setLoading(false);
       setRefreshing(false);
     }
   };
 
-  // Busca e atualiza a lista de filmes do servidor fake toda vez que a tela entra em foco (reaberta)
   useFocusEffect(
     useCallback(() => {
-      fetchMovies(movies.length === 0);
+      fetchFavorites(movies.length === 0);
     }, [])
   );
 
   const onRefresh = () => {
     setRefreshing(true);
-    fetchMovies(false);
+    fetchFavorites(false);
   };
 
   const filteredMovies =
@@ -76,11 +75,27 @@ export default function Home() {
       ? movies
       : movies.filter((m) => m.genero === selectedGenre);
 
-  const featuredMovie = movies.length > 0 ? movies[0] : null;
-
   return (
     <SafeAreaView style={styles.container}>
-      <StatusBar barStyle="light-content" />
+      <View style={styles.header}>
+        <TouchableOpacity
+          style={styles.backButton}
+          onPress={() => router.replace("/")}
+          activeOpacity={0.7}
+        >
+          <ArrowLeft size={20} color="#94A3B8" />
+          <Text style={styles.backText}>Voltar</Text>
+        </TouchableOpacity>
+
+        <Text style={styles.title}>Favoritos</Text>
+      </View>
+
+      <View style={styles.filterArea}>
+        <GenreFilter
+          selectedGenre={selectedGenre}
+          onSelectGenre={setSelectedGenre}
+        />
+      </View>
 
       {loading ? (
         <View style={styles.loadingContainer}>
@@ -97,13 +112,10 @@ export default function Home() {
             />
           }
         >
-          <HeroBanner movie={featuredMovie} />
-
-          <GenreFilter
-            selectedGenre={selectedGenre}
-            onSelectGenre={setSelectedGenre}
+          <MovieList
+            movies={filteredMovies}
+            onFavoriteToggle={() => fetchFavorites(false)}
           />
-          <MovieList movies={filteredMovies} onFavoriteToggle={() => fetchMovies(false)} />
         </ScrollView>
       )}
     </SafeAreaView>
@@ -113,12 +125,40 @@ export default function Home() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#0B0B0F",
+    backgroundColor: "#0F172A",
+    paddingTop: 10,
   },
+
+  header: {
+    marginTop: 24,
+    marginLeft: 24,
+  },
+
+  backButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 5,
+  },
+
+  backText: {
+    color: "#94A3B8",
+    fontSize: 14,
+  },
+
+  title: {
+    color: "#FFFFFF",
+    fontSize: 34,
+    fontWeight: "800",
+    marginTop: 8,
+  },
+
+  filterArea: {
+    marginBottom: 6,
+  },
+
   loadingContainer: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "#0B0B0F",
   },
 });
